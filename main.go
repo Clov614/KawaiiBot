@@ -105,16 +105,18 @@ func main() {
 				}
 			}
 			//fmt.Println(user.ID())
-			if len(Ls) >= 2 && Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chatGPT" {
+			if len(Ls) >= 2 && (Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chat"+
+				"GPT" || Ls[0] == "/ChatGPT") {
 				manager.LifeCycleCtl(user.ID(), params, Ls[1])
 				msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
 				return
-			} else if msg.Content == "/chatgpt" || msg.Content == "/chatGPT" {
+			} else if msg.Content == "/chatgpt" || msg.Content == "/chatGPT"+
+				"" || msg.Content == "/ChatGPT" || msg.Content == "/Chatgpt" {
 				manager.LifeCycleCtl(user.ID(), params, "你是一个全知全能的AI助手")
 				msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
 				return
 			}
-			if len(Ls) >= 2 && Ls[0] == "/Q" || Ls[0] == "/q" || Ls[0] == "[Q]" || Ls[0] == "[q]" {
+			if len(Ls) >= 2 && (Ls[0] == "/Q" || Ls[0] == "/q" || Ls[0] == "[Q]" || Ls[0] == "[q]") {
 				fmt.Println("msg:" + Ls[1])
 				if manager.Conns != nil {
 					if _, ok := (*manager.Conns)[user.ID()]; ok {
@@ -142,4 +144,3 @@ func ConsoleQrCode(uuid string) {
 	q, _ := qrcode.New("https://login.weixin.qq.com/l/"+uuid, qrcode.Low)
 	fmt.Println(q.ToString(true))
 }
-
