@@ -16,10 +16,7 @@ var (
 	conf   = new(Setting.Conf)
 	params = chatgpt.InitParams{
 		ApiURL: "https://api.openai.com/v1/chat/completions",
-		//ApiKey:   "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",
-		//ProxyURL: "http://127.0.0.1:7890",
-		Model: "gpt-3.5-turbo",
-		//TimeOut:  300,
+		Model:  "gpt-3.5-turbo",
 	}
 	manager = &chatgpt.Manager{}
 )
@@ -63,32 +60,6 @@ func main() {
 		bot.UUIDCallback = openwechat.PrintlnQrcodeUrl
 	}
 
-	//// 扫码回调
-	//bot.ScanCallBack = func(body openwechat.CheckLoginResponse) {
-	//	Avater, _ := body.Avatar()
-	//	// 去掉Base64字符串中的非数据部分
-	//	// 写正则提取出base64
-	//	pattern, err := regexp.Compile("^data:img/jpg;base64,([\\s\\S]*)$")
-	//	target := pattern.FindStringSubmatch(Avater)
-	//	imgBase64 := ""
-	//	if len(target) != 0 {
-	//		imgBase64 = target[1]
-	//	} else {
-	//		log.Fatalln("len(target) == 0")
-	//	}
-	//	// 解码Base64字符串为字节数组
-	//	imgData, err := base64.StdEncoding.DecodeString(imgBase64)
-	//	if err != nil {
-	//		fmt.Println("Error decoding image data:", err)
-	//		return
-	//	}
-	//	f, _ := os.OpenFile("./Avater.jpg", os.O_CREATE|os.O_RDWR, 0777)
-	//	_, err2 := f.Write(imgData) //buffer输出到jpg文件中（不做处理，直接写到文件）
-	//	if err2 != nil {
-	//		log.Fatalln("图像保存失败", err2)
-	//	}
-	//}
-
 	// 创建热登录对象
 	reloadStorage := openwechat.NewFileHotReloadStorage("./storage.json")
 
@@ -98,12 +69,6 @@ func main() {
 	if err := bot.HotLogin(reloadStorage, openwechat.NewRetryLoginOption()); err != nil {
 		log.Fatalln(err)
 	}
-
-	// 登陆
-	//if err := bot.Login(); err != nil {
-	//	fmt.Println(err)
-	//	return
-	//}
 
 	// 获取登陆的用户
 	self, err := bot.GetCurrentUser()
@@ -119,21 +84,6 @@ func main() {
 	// 获取所有的群组
 	groups, err := self.Groups()
 	fmt.Println(groups, err)
-
-	//// 注册消息处理函数
-	//bot.MessageHandler = func(msg *openwechat.Message) {
-	//	if msg.IsText() && msg.Content == "ping" {
-	//		msg.ReplyText("pong")
-	//	}
-	//}
-
-	//// 发送chatgpt消息
-	//bot.MessageHandler = func(msg *openwechat.Message) {
-	//	if _, ok := (*manager.Conns)[msg.ToUserName]; msg.IsText() && ok {
-	//		reply := manager.SendMsg(msg.ToUserName, msg.Content)
-	//		msg.ReplyText("[chatGPT] " + reply)
-	//	}
-	//}
 
 	// 消息处理的回调函数
 	bot.MessageHandler = func(msg *openwechat.Message) {
@@ -183,16 +133,6 @@ func main() {
 		}
 	}
 
-	// 消息处理
-	// 构造dispatcher
-	//dispatcher := openwechat.NewMessageMatchDispatcher()
-	// 注册消息处理函数
-	//dispatcher.RegisterHandler(matchFunc, handleInfo)
-	//dispatcher.RegisterHandler(matchSendChatGPT, handleSendChatGPT)
-	//dispatcher.RegisterHandler(matchFunc, handleInfo)
-	// 注册消息回调函数
-	//bot.MessageHandler = dispatcher.AsMessageHandler()
-
 	// 阻塞主goroutine, 直到发生异常或者用户主动退出
 	bot.Block()
 }
@@ -203,90 +143,3 @@ func ConsoleQrCode(uuid string) {
 	fmt.Println(q.ToString(true))
 }
 
-// 消息匹配函数
-func matchFunc(msg *openwechat.Message) bool {
-	if msg.IsText() && msg.Content == "/info" {
-		return true
-	}
-	fmt.Println(msg.MsgType)
-	fmt.Println(msg.AppMsgType)
-	fmt.Println(msg.Url)
-	return false
-}
-
-func matchNewChatGPT(msg *openwechat.Message) bool {
-	if msg.IsText() {
-		//msg.ReplyText(msg.Content)
-		Ls := strings.Split(msg.Content, " ")
-		if len(Ls) >= 2 && Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chatGPT" {
-			return true
-		} else if msg.Content == "/chatgpt" || msg.Content == "/chatGPT" {
-			manager.LifeCycleCtl(msg.ToUserName, params, "你是一个全知全能的AI助手")
-			msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！")
-			return true
-		}
-	}
-	return false
-}
-
-func handleNewChatGPT(ctx *openwechat.MessageContext) {
-	Ls := strings.Split(ctx.Message.Content, " ")
-	manager.LifeCycleCtl(ctx.Message.ToUserName, params, Ls[1])
-	_, err := ctx.Message.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！")
-	if err != nil {
-		return
-	}
-}
-
-func matchSendChatGPT(msg *openwechat.Message) bool {
-	if _, ok := (*manager.Conns)[msg.ToUserName]; msg.IsText() && ok {
-		return true
-	}
-	return false
-}
-
-func handleSendChatGPT(ctx *openwechat.MessageContext) {
-	reply := manager.SendMsg(ctx.Message.ToUserName, ctx.Message.Content)
-	_, err := ctx.Message.ReplyText("[chatGPT] " + reply)
-	if err != nil {
-		return
-	}
-}
-
-// 文件相关测试
-//func matchFunc(msg *openwechat.Message) bool {
-//	fmt.Println("[msgType]", int(msg.MsgType))
-//	fmt.Println("[AppMsgType]", int(msg.AppMsgType))
-//	if int(msg.MsgType) == 49 {
-//		fmt.Println("allin")
-//		resp, err := msg.GetFile()
-//		if err != nil {
-//			log.Fatalln(err)
-//		}
-//		defer resp.Body.Close()
-//		respByte, _ := ioutil.ReadAll(resp.Body)
-//		file, _ := os.OpenFile("./resp.word", os.O_CREATE|os.O_RDWR, 0777)
-//		file.Write(respByte)
-//		defer file.Close()
-//	}
-//	return false
-//}
-
-//func matchFunc(msg *openwechat.Message) bool {
-//	if msg.IsText() && msg.Content == "/chatgpt" {
-//		manager.LifeCycleCtl(msg.ToUserName, params, "你是一个全知全能的人工智能")
-//		return true
-//	}
-//	fmt.Println(msg.MsgType)
-//	fmt.Println(msg.AppMsgType)
-//	fmt.Println(msg.Url)
-//	return false
-//}
-
-// 消息处理函数
-//func handleInfo(ctx *openwechat.MessageContext) {
-//	_, err := ctx.Message.ReplyText("这里是一个由openwechat框架搭建的一个wechat_bot,主要的功能是AI对话")
-//	if err != nil {
-//		return
-//	}
-//}
