@@ -33,13 +33,17 @@ type InitParams struct {
 	TimeOut int
 }
 
+// 为conns分配内存地址
+func (m *Manager) NewConns() {
+	conns := make(Conns, 0)
+	m.Conns = &conns
+}
+
 // 初始化连接
 func (m *Manager) initConn(user string, p InitParams, diaLogType string) {
 	conn := NewConn()
 	conn.InitMsgs(p.Model, diaLogType) // 初始化消息，并在消息列表头部添加 system
 	conn.InitReq(string(p.ApiURL), string(p.ApiKey), conn.Data, string(p.ProxyURL))
-	conns := make(Conns, 0)
-	m.Conns = &conns
 	//m.Conns = conns
 	startTime := time.Now()
 	ctx := &Ctx{

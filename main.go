@@ -19,7 +19,7 @@ var (
 		ApiURL: "https://api.openai.com/v1/chat/completions",
 		Model:  "gpt-3.5-turbo",
 	}
-	manager = &chatgpt.Manager{}
+	manager = new(chatgpt.Manager)
 )
 
 func init() {
@@ -43,6 +43,9 @@ func init() {
 	params.ApiKey = chatgpt.ApiKey(conf.ApiKey)
 	params.ProxyURL = chatgpt.ProxyURL(conf.ProxyURL)
 	params.TimeOut = conf.TimeOut
+
+	// 初始化conns
+	manager.NewConns()
 }
 
 func main() {
