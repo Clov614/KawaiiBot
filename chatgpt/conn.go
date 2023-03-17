@@ -3,8 +3,8 @@ package chatgpt
 import (
 	"bytes"
 	"encoding/json"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -130,7 +130,7 @@ func (c *Conn) PostMsg() (Response, Error) {
 
 	req, err := http.NewRequest("POST", r.Url, bytes.NewBuffer(jsonData))
 	if err != nil {
-		log.Println("发起请求错误(未配置正确代理)")
+		log.Error("发起请求错误(未配置正确代理)")
 		time.Sleep(time.Second * 5)
 		os.Exit(-1)
 	}
@@ -140,17 +140,17 @@ func (c *Conn) PostMsg() (Response, Error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Println(err)
+		log.Error(err)
 	}
 	defer resp.Body.Close()
 	// 获取响应的主体内容
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 	}
 
 	if resp.StatusCode != 200 {
-		log.Println("请求状态码: ", resp.StatusCode)
+		log.Error("请求状态码: ", resp.StatusCode)
 		//time.Sleep(time.Second * 5)
 		//os.Exit(resp.StatusCode)
 		//fmt.Println(string(body))

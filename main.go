@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/OpenWechat/Setting"
-	"github.com/OpenWechat/chatgpt"
+	"github.com/KawaiiBot/Setting"
+	"github.com/KawaiiBot/chatgpt"
+	_ "github.com/KawaiiBot/logger"
 	"github.com/eatmoreapple/openwechat"
+	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -24,17 +25,17 @@ var (
 func init() {
 	if !conf.IsExist() { // 配置文件不存在
 		conf.InitConfDefault() // 初始化默认conf
-		log.Println("请配置conf.yml文件后重启程序")
+		log.Info("请配置conf.yml文件后重启程序")
 		time.Sleep(time.Second * 5) // 延时5s退出
 		os.Exit(1)
 	}
 	err := conf.ReadConf()
 	if err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 	}
 	// 判断是否配置成功
 	if conf.ProxyURL == "" || conf.TimeOut == 0 || conf.ApiKey == "" {
-		log.Println("配置文件错误")
+		log.Error("配置文件错误")
 		time.Sleep(time.Second * 5) // 延时5s退出
 		os.Exit(2)
 	}
@@ -67,7 +68,7 @@ func main() {
 
 	// 执行热登录
 	if err := bot.HotLogin(reloadStorage, openwechat.NewRetryLoginOption()); err != nil {
-		log.Fatalln(err)
+		log.Error(err)
 	}
 
 	// 获取登陆的用户

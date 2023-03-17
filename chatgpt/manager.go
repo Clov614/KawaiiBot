@@ -1,7 +1,7 @@
 package chatgpt
 
 import (
-	"log"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 
@@ -76,11 +76,11 @@ func (m *Manager) doSend(ctx *Ctx, conn Conn) (replyMsg string) {
 	ctx.Start = &nowTime
 	resp, respErr := conn.PostMsg()
 	if respErr.Code != "" {
-		log.Println("[ERR]" + respErr.Code)
+		log.Info("[ERR]" + respErr.Code)
 		// 错误类型为上下文超限
 		if respErr.Code == "context_length_exceeded" {
 			// 删除最开始对话
-			log.Println(conn.DelEarlyMsg())
+			log.Info(conn.DelEarlyMsg())
 			// 递归调用直至上下文不超限
 			return m.doSend(ctx, conn)
 		} else {
@@ -113,7 +113,7 @@ func (m *Manager) destoryConn(user string) {
 	select {
 	case <-conns[user].DeadSignal:
 		delete(*m.Conns, user) // 删除连接
-		log.Println(user + ": 连接已关闭")
+		log.Info(user + ": 连接已关闭")
 	}
 }
 
