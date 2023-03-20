@@ -49,6 +49,13 @@ func init() {
 }
 
 func main() {
+	// 拦截恐慌，防止程序崩溃
+	defer func() {
+		if e := recover(); e != nil {
+			log.Error(e)
+		}
+	}()
+	
 	bot := openwechat.DefaultBot(openwechat.Desktop) // 桌面模式，上面登录不上的可以尝试切换这种模式
 
 	// 注册消息处理函数
