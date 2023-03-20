@@ -100,6 +100,13 @@ func (c *Conn) InitReq(url string, apiKey string, data *Data, ProxyURL string) {
 
 // 发送消息
 func (c *Conn) PostMsg() (Response, Error) {
+	// 拦截恐慌 网络错误问题拦截
+	defer func() {
+		if e := recover(); e != nil {
+			log.Error(e)
+		}
+	}()
+
 	r := c.Request
 
 	// 配置好data
