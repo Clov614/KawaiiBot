@@ -142,21 +142,19 @@ func CheckTextHandle(msg *openwechat.Message, textHandle func(*openwechat.Messag
 		// 添加分词检测
 		Ls := strings.SplitN(msg.Content, " ", 2)
 		CheckFlag := false
-		respF := tcd.RespTC{}
 		if len(Ls) > 1 {
 			for _, v := range Ls {
-				ok, respF := TcdHandle(v)
+				ok, _ := TcdHandle(v)
 				if !ok {
 					CheckFlag = true
 					break
 				}
 			}
 		}
-		_ = respF
 		// 违禁词检测
 		if ok, resp := TcdHandle(msg.Content); !ok || CheckFlag {
 			if len(resp.Data) == 0 {
-				msg.ReplyText("[敏感词检测]" + respF.Data[0].Msg)
+				msg.ReplyText("[敏感词检测]")
 			} else {
 				msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
 			}
