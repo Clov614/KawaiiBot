@@ -123,7 +123,7 @@ func ConsoleQrCode(uuid string) {
 }
 
 // 违禁词检测处理
-func TcdHandle(text string) (bool, tcd.RespTC) {
+func TcdHandle(text string) (bool, *tcd.RespTC) {
 	reqAT := tcd.ReqAT{
 		GrantType:    "client_credentials",
 		ClientId:     "t1oB5lG16bshlkmG23ftGMdp",         // APIKEY
@@ -132,8 +132,8 @@ func TcdHandle(text string) (bool, tcd.RespTC) {
 	reqTc := tcd.ReqTC{}
 	reqTc.AccessToken = string(reqAT.GetAT())
 	reqTc.Text = text
-	respTc := tcd.RespTC{}
-	return reqTc.Detect(&respTc), respTc
+	respTc := new(tcd.RespTC)
+	return reqTc.Detect(respTc), respTc
 }
 
 // 功能处理模块
