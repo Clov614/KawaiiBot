@@ -100,7 +100,10 @@ func main() {
 	// 消息处理的回调函数
 	bot.MessageHandler = func(msg *openwechat.Message) {
 		user, _ := msg.Sender()
-
+		// 好友请求信息测试
+		if msg.IsFriendAdd() {
+			log.Info(msg)
+		}
 		if msg.IsTickledMe() {
 			msg.ReplyText("别拍了，机器人是会被拍坏掉的。")
 			return
