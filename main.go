@@ -99,7 +99,6 @@ func main() {
 
 	// 消息处理的回调函数
 	bot.MessageHandler = func(msg *openwechat.Message) {
-		user, _ := msg.Sender()
 		// 好友请求信息测试
 		if msg.IsFriendAdd() {
 			log.Info(msg)
@@ -109,51 +108,8 @@ func main() {
 			return
 		}
 		// 回复文本消息
-		if msg.IsText() {
-			// 违禁词检测
-			if ok, resp := TcdHandle(msg.Content); !ok {
-				msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
-				return
-			}
-
-			Ls := strings.SplitN(msg.Content, " ", 2)
-			fmt.Println(Ls)
-			if msg.Content == "/info" {
-				_, err := msg.ReplyText("这里是一个由openwechat框架搭建的一个wechat_bot,主要的功能是AI对话")
-				if err != nil {
-					fmt.Println(err)
-					return
-				}
-			}
-			//fmt.Println(user.ID())
-			if len(Ls) >= 2 && (Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chat"+
-				"GPT" || Ls[0] == "/ChatGPT") {
-				manager.LifeCycleCtl(user.ID(), params, Ls[1])
-				msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
-				return
-			} else if msg.Content == "/chatgpt" || msg.Content == "/chatGPT"+
-				"" || msg.Content == "/ChatGPT" || msg.Content == "/Chatgpt" {
-				manager.LifeCycleCtl(user.ID(), params, "你是一个全知全能的AI助手")
-				msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
-				return
-			}
-			if len(Ls) >= 2 && (Ls[0] == "/Q" || Ls[0] == "/q" || Ls[0] == "[Q]" || Ls[0] == "[q]") {
-				fmt.Println("msg:" + Ls[1])
-				if manager.Conns != nil {
-					if _, ok := (*manager.Conns)[user.ID()]; ok {
-						reply := manager.SendMsg(user.ID(), Ls[1])
-						msg.ReplyText("[chatGPT] " + reply)
-						return
-					} else {
-						msg.ReplyText("[Error] " + "对话连接已超时关闭\n使用/chatGPT新建连接吧")
-					}
-				} else {
-					msg.ReplyText("[Error] " + "请初始化chatGPT\n使用/chatGPT新建连接吧")
-				}
-
-			}
-
-		}
+		// 文本违禁词检测
+		CheckTextHandle(msg, TextHandle)
 	}
 
 	// 阻塞主goroutine, 直到发生异常或者用户主动退出
@@ -178,4 +134,57 @@ func TcdHandle(text string) (bool, tcd.RespTC) {
 	reqTc.Text = text
 	respTc := tcd.RespTC{}
 	return reqTc.Detect(&respTc), respTc
+}
+
+// 功能处理模块
+func CheckTextHandle(msg *openwechat.Message, textHandle func(*openwechat.Message)) {
+	if msg.IsText() {
+		// 违禁词检测
+		if ok, resp := TcdHandle(msg.Content); !ok {
+			msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
+			return
+		}
+	} else {
+		textHandle(msg)
+	}
+}
+
+func TextHandle(msg *openwechat.Message) {
+	user, _ := msg.Sender()
+	Ls := strings.SplitN(msg.Content, " ", 2)
+	fmt.Println(Ls)
+	if msg.Content == "/info" {
+		_, err := msg.ReplyText("这里是一个由openwechat框架搭建的一个wechat_bot,主要的功能是AI对话")
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+	//fmt.Println(user.ID())
+	if len(Ls) >= 2 && (Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chat"+
+		"GPT" || Ls[0] == "/ChatGPT") {
+		manager.LifeCycleCtl(user.ID(), params, Ls[1])
+		msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
+		return
+	} else if msg.Content == "/chatgpt" || msg.Content == "/chatGPT"+
+		"" || msg.Content == "/ChatGPT" || msg.Content == "/Chatgpt" {
+		manager.LifeCycleCtl(user.ID(), params, "你是一个全知全能的AI助手")
+		msg.ReplyText("新建chatGPT对话成功，赶紧开始聊天吧！\n" + "使用/q + 空格 + 内容(/q 内容)来提问吧")
+		return
+	}
+	if len(Ls) >= 2 && (Ls[0] == "/Q" || Ls[0] == "/q" || Ls[0] == "[Q]" || Ls[0] == "[q]") {
+		fmt.Println("msg:" + Ls[1])
+		if manager.Conns != nil {
+			if _, ok := (*manager.Conns)[user.ID()]; ok {
+				reply := manager.SendMsg(user.ID(), Ls[1])
+				msg.ReplyText("[chatGPT] " + reply)
+				return
+			} else {
+				msg.ReplyText("[Error] " + "对话连接已超时关闭\n使用/chatGPT新建连接吧")
+			}
+		} else {
+			msg.ReplyText("[Error] " + "请初始化chatGPT\n使用/chatGPT新建连接吧")
+		}
+
+	}
 }
