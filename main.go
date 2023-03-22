@@ -139,8 +139,19 @@ func TcdHandle(text string) (bool, tcd.RespTC) {
 // 功能处理模块
 func CheckTextHandle(msg *openwechat.Message, textHandle func(*openwechat.Message)) {
 	if msg.IsText() {
+		// 添加分词检测
+		Ls := strings.SplitN(msg.Content, " ", 2)
+		CheckFlag := false
+		if len(Ls) > 1 {
+			for _, v := range Ls {
+				ok, _ := TcdHandle(v)
+				if !ok {
+					CheckFlag = true
+				}
+			}
+		}
 		// 违禁词检测
-		if ok, resp := TcdHandle(msg.Content); !ok {
+		if ok, resp := TcdHandle(msg.Content); !ok || CheckFlag {
 			msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
 			return
 		} else {
