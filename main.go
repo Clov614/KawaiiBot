@@ -143,9 +143,9 @@ func CheckTextHandle(msg *openwechat.Message, textHandle func(*openwechat.Messag
 		if ok, resp := TcdHandle(msg.Content); !ok {
 			msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
 			return
+		} else {
+			textHandle(msg)
 		}
-	} else {
-		textHandle(msg)
 	}
 }
 
@@ -159,6 +159,7 @@ func TextHandle(msg *openwechat.Message) {
 			fmt.Println(err)
 			return
 		}
+		return
 	}
 	//fmt.Println(user.ID())
 	if len(Ls) >= 2 && (Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chat"+
