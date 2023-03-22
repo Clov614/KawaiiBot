@@ -5,6 +5,7 @@ import (
 	"github.com/KawaiiBot/Setting"
 	"github.com/KawaiiBot/chatgpt"
 	_ "github.com/KawaiiBot/logger"
+	"github.com/KawaiiBot/model/tcd"
 	"github.com/eatmoreapple/openwechat"
 	log "github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
@@ -55,7 +56,7 @@ func main() {
 			log.Error(e)
 		}
 	}()
-	
+
 	bot := openwechat.DefaultBot(openwechat.Desktop) // 桌面模式，上面登录不上的可以尝试切换这种模式
 
 	// 注册消息处理函数
@@ -106,6 +107,12 @@ func main() {
 		}
 		// 回复文本消息
 		if msg.IsText() {
+			// 违禁词检测
+			if ok, resp := TcdHandle(msg.Content); !ok {
+				msg.ReplyText("[敏感词检测]" + resp.Data[0].Msg)
+				return
+			}
+
 			Ls := strings.SplitN(msg.Content, " ", 2)
 			fmt.Println(Ls)
 			if msg.Content == "/info" {
@@ -154,4 +161,18 @@ func main() {
 func ConsoleQrCode(uuid string) {
 	q, _ := qrcode.New("https://login.weixin.qq.com/l/"+uuid, qrcode.Low)
 	fmt.Println(q.ToString(true))
+}
+
+// 违禁词检测处理
+func TcdHandle(text string) (bool, tcd.RespTC) {
+	reqAT := tcd.ReqAT{
+		GrantType:    "client_credentials",
+		ClientId:     "t1oB5lG16bshlkmG23ftGMdp",         // APIKEY
+		ClientSecret: "XguHk2lue4hNG8RvCBeV0hswYpi7Q0DO", // secretKEY
+	}
+	reqTc := tcd.ReqTC{}
+	reqTc.AccessToken = string(reqAT.GetAT())
+	reqTc.Text = text
+	respTc := tcd.RespTC{}
+	return reqTc.Detect(&respTc), respTc
 }
