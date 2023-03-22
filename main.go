@@ -140,7 +140,7 @@ func TcdHandle(text string) (bool, tcd.RespTC) {
 func CheckTextHandle(msg *openwechat.Message, textHandle func(*openwechat.Message)) {
 	if msg.IsText() {
 		// 添加分词检测
-		Ls := strings.SplitN(msg.Content, " ", 2)
+		Ls := strings.Split(msg.Content, " ")
 		CheckFlag := false
 		if len(Ls) > 1 {
 			for _, v := range Ls {
