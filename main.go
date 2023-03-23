@@ -175,7 +175,7 @@ func TcdHandle(text string) (bool, *tcd.RespTC) {
 		ClientId:     "t1oB5lG16bshlkmG23ftGMdp",         // APIKEY
 		ClientSecret: "XguHk2lue4hNG8RvCBeV0hswYpi7Q0DO", // secretKEY
 	}
-	reqTc := tcd.ReqTC{}
+	reqTc := new(tcd.ReqTC)
 	reqTc.AccessToken = string(reqAT.GetAT())
 	reqTc.Text = text
 	respTc := new(tcd.RespTC)

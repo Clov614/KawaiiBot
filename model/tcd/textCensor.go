@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type ReqTC struct {
@@ -38,6 +39,7 @@ type Data struct {
 
 func (r ReqTC) Detect(respTc *RespTC) bool {
 	url := "https://aip.baidubce.com/rest/2.0/solution/v1/text_censor/v2/user_defined?access_token=" + r.AccessToken
+	r.Text = strings.ReplaceAll(r.Text, "\n", "")
 	url = url + "&text=" + r.Text
 	client := &http.Client{}
 	//data := fmt.Sprintf(`{"text":"%s"}`, r.Text)
