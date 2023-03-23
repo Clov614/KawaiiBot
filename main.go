@@ -125,7 +125,7 @@ func main() {
 			//fmt.Println(user.ID())
 			if len(Ls) >= 2 && (Ls[0] == "/chatgpt" || Ls[0] == "/Chatgpt" || Ls[0] == "/chat"+
 				"GPT" || Ls[0] == "/ChatGPT") {
-				if CheckText(msg, Ls[1]) {
+				if CheckText(msg, strings.ReplaceAll(Ls[1], " ", "")) {
 					return
 				}
 				manager.LifeCycleCtl(user.ID(), params, Ls[1])
@@ -140,7 +140,7 @@ func main() {
 			if len(Ls) >= 2 && (Ls[0] == "/Q" || Ls[0] == "/q" || Ls[0] == "[Q]" || Ls[0] == "[q]") {
 				fmt.Println("msg:" + Ls[1])
 				if manager.Conns != nil {
-					if CheckText(msg, Ls[1]) {
+					if CheckText(msg, strings.ReplaceAll(Ls[1], " ", "")) {
 						return
 					}
 					if _, ok := (*manager.Conns)[user.ID()]; ok {
